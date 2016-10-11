@@ -8,6 +8,7 @@
 # - download is for downloading files uploaded in the db (does streaming)
 # -------------------------------------------------------------------------
 
+import json
 
 def index():
     """This displays two kind of things.
@@ -35,12 +36,17 @@ def edit():
     - If there is a checklist id, and there is an additional argument edit=true, it offers a form
       to edit or delete a checklist.
     """
+    cl = None
+    item_list = []
     if request.args(0) is None:
         # request.args[0] would give an error if there is no argument 0.
         form_type = 'create'
         # We create a form for adding a new checklist item.  So far, the checklist items
         # are displayed in very rough form only.
-        form = SQLFORM(db.checklist)
+        form = SQLFORM.factory(
+            Field('title'),
+            Field('items_yada', 'list:string', label='Items'),
+        )
     else:
         # A checklist is specified.  We need to check that it exists, and that the user is the author.
         # We use .first() to get either the first element or None, rather than an iterator.
@@ -61,7 +67,24 @@ def edit():
 
         is_edit = (request.vars.edit == 'true')
         form_type = 'edit' if is_edit else 'view'
-        form = SQLFORM(db.checklist, record=cl, deletable=is_edit, readonly=not is_edit)
+
+        # Let's extract the list of items.
+        item_list = None
+        try:
+            item_list = json.loads(cl.checklist)
+        except:
+            pass
+        if not isinstance(item_list, list):
+            if isinstance(cl.checklist, basestring):
+                item_list = [cl.checklist]
+            else:
+                item_list = []
+
+        form = SQLFORM.factory(
+            Field('title', default=cl.title, writable=is_edit),
+            Field('items_yada', 'list:string', default=item_list, label='Items',
+                  writable=is_edit),
+        )
 
     # Adds some buttons.  Yes, this is essentially glorified GOTO logic.
     button_list = []
@@ -78,15 +101,22 @@ def edit():
                              _href=URL('default', 'index')))
 
     if form.process().accepted:
-        # At this point, the record has already been inserted.
+        # We have to update/insert the record.
+        items = json.dumps(form.vars.items_yada)
+        logger.info("Our items are: %r" % form.vars.items_yada)
         if form_type == 'create':
+            db.checklist.insert(title=form.vars.title,
+                                checklist=items)
             session.flash = T('Checklist added.')
         else:
             session.flash = T('Checklist edited.')
+            cl.checklist = items
+            cl.update_record()
         redirect(URL('default', 'index'))
     elif form.errors:
         session.flash = T('Please enter correct values.')
-    return dict(form=form, button_list=button_list)
+    return dict(form=form, button_list=button_list, cl=cl, form_type=form_type,
+                item_list=item_list)
 
 
 
