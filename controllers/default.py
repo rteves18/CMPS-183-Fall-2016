@@ -32,7 +32,7 @@ def index():
         # The user is logged in.
         # Gets the list of all checklists for the user.
         posts = db(db.post.user_email == auth.user.email).select(
-            orderby=~db.post.upated_on
+            orderby=~db.post.last_opened
         )
     return dict(posts=posts)
 
@@ -47,7 +47,7 @@ def edit():
         form_type = 'create'
         # We create a form for adding a new checklist item.  So far, the checklist items
         # are displayed in very rough form only.
-        form = SQLFORM(db.checklist)
+        form = SQLFORM(db.post)
     else:
         # A checklist is specified.  We need to check that it exists, and that the user is the author.
         # We use .first() to get either the first element or None, rather than an iterator.
