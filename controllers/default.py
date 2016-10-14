@@ -86,6 +86,7 @@ def edit():
 
     if form.process().accepted:
         # At this point, the record has already been inserted.
+        # test comment
         if form_type == 'create':
             session.flash = T('Post added.')
         else:
