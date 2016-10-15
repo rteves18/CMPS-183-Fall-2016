@@ -27,11 +27,12 @@
             <b>Post: </b>
             {{=cl.post}}</div>
                 <br>
-                <i>Time Posted: </i>{{=cl.created_on}}
+                <b><i>Author: </i></b> {{=author(cl.user_email)}}
+                <b><i>Time Posted: </i></b>{{=cl.created_on}}
                 {{if cl.updated_on!=cl.created_on:}}
-                <i>Time Edited:</i> {{cl.updated_on}}
+                <b><i>Time Edited: </i></b> {{=cl.updated_on}}
                 {{pass}}
-                {{if auth.user_id:}}
+                {{if auth.user_id and cl.user_email == auth.user.email:}}
                     <a href="{{=URL('default','edit',args=[cl.id])}}"class="post_title">
                         <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                     </a>

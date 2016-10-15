@@ -8,6 +8,7 @@
 # - download is for downloading files uploaded in the db (does streaming)
 # -------------------------------------------------------------------------
 
+"""===Gets Username's First and Last Name==="""
 def get_user_name_from_email(email):
     """Returns a string corresponding to the user first and last names,
     given the user email."""
@@ -20,51 +21,42 @@ def get_user_name_from_email(email):
 
 def index():
     """
-    This is your main controller.
+    === Returns 'post' from the Database order by last created ===
+    === Also returns 'author' from get user name from email function ===
     """
-    # I am creating a bogus list here, just to have some divs appear in the
-    # view.  You need to read at most 20 posts from the database, in order of
-    # most recent first, and you need to return that list here.
-    # Note that posts is NOT a list of strings in your actual code; it is
-    # what you get from a db(...).select(...).
-
-    return dict(posts=db().select(orderby=~db.post.created_on))
+    return dict(posts=db().select(orderby=~db.post.created_on), author = get_user_name_from_email)
 
 
 @auth.requires_login()
 def edit():
     """
-    This is the page to create / edit / delete a post.
+    === Create / Edit / Delete post functions here ===
     """
     if request.args(0) is None:
         # request.args[0] would give an error if there is no argument 0.
         form_type = 'create'
-        # We create a form for adding a new checklist item.  So far, the checklist items
-        # are displayed in very rough form only.
+        # Creates a form for adding a new checklist item.
         form = SQLFORM(db.post)
     else:
-        # A checklist is specified.  We need to check that it exists, and that the user is the author.
-        # We use .first() to get either the first element or None, rather than an iterator.
+        # Authenticates edit with original poster
         q = ((db.post.user_email == auth.user.email) &
              (db.post.id == request.args(0)))
         cl = db(q).select().first()
         if cl is None:
             session.flash = T('Not Authorized')
             redirect(URL('default', 'index'))
-        # Always write invariants in your code.
-        # Here, the invariant is that the checklist is known to exist.
 
-        # Let's update the last opened date.
+        # Update the last opened date.
         cl.updated_on = datetime.datetime.utcnow()
         cl.update_record()
 
-        # Is this an edit form?
+        # Edit form
 
         is_edit = (request.vars.edit == 'true')
         form_type = 'edit' if is_edit else 'view'
         form = SQLFORM(db.post, record=cl, deletable=is_edit, readonly=not is_edit)
 
-    # Adds some buttons.  Yes, this is essentially glorified GOTO logic.
+    # Edit page buttons
     button_list = []
     if form_type == 'edit':
         button_list.append(A('Cancel', _class='btn btn-warning',
@@ -78,9 +70,8 @@ def edit():
         button_list.append(A('Back', _class='btn btn-primary',
                              _href=URL('default', 'index')))
 
+    # Edit post flashes update
     if form.process().accepted:
-        # At this point, the record has already been inserted.
-        # test comment
         if form_type == 'create':
             session.flash = T('Post added.')
         else:
@@ -93,19 +84,7 @@ def edit():
 
 def user():
     """
-    exposes:
-    http://..../[app]/default/user/login
-    http://..../[app]/default/user/logout
-    http://..../[app]/default/user/register
-    http://..../[app]/default/user/profile
-    http://..../[app]/default/user/retrieve_password
-    http://..../[app]/default/user/change_password
-    http://..../[app]/default/user/bulk_register
-    use @auth.requires_login()
-        @auth.requires_membership('group name')
-        @auth.requires_permission('read','table name',record_id)
-    to decorate functions that need access control
-    also notice there is http://..../[app]/appadmin/manage/auth to allow administrator to manage users
+    === Returns user authorization ===
     """
     return dict(form=auth())
 
