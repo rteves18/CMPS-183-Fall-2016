@@ -1,13 +1,3 @@
-/* line 1, ../sass/_main.scss */
-.colorful {
-  color: #bb8833;
-}
-
-/* line 6, ../sass/_main.scss */
-a .fa {
-  margin-right: 10px;
-}
-
 /* line 2, ../sass/_main.scss */
 .post_listing {
   margin: 10px 0px 10px 0px;
@@ -17,6 +7,19 @@ a .fa {
 /* line 7, ../sass/_main.scss */
 .post_list {
   padding-top: 10px;
+}
+
+/* line 11, ../sass/_main.scss */
+.post {
+  border-color: #cccccc;
+  border-style: solid;
+  border-width: 1px;
+  background: #eeeeee;
+  margin: 20px 0px 20px 0px;
+  padding: 20px;
+  -moz-border-radius: 16px;
+  -webkit-border-radius: 16px;
+  border-radius: 16px;
 }
 
 /* line 19, ../sass/_main.scss */

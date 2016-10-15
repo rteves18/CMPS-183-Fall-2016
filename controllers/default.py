@@ -27,14 +27,8 @@ def index():
     # most recent first, and you need to return that list here.
     # Note that posts is NOT a list of strings in your actual code; it is
     # what you get from a db(...).select(...).
-    posts = None
-    if auth.user_id is not None:
-        # The user is logged in.
-        # Gets the list of all checklists for the user.
-        posts = db(db.post.user_email == auth.user.email).select(
-            orderby=~db.post.last_opened
-        )
-    return dict(posts=posts)
+
+    return dict(posts=db().select(orderby=~db.post.created_on))
 
 
 @auth.requires_login()
